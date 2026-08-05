@@ -1,0 +1,15 @@
+# Archivos a ignorar
+monitoreo.py.bak
+verificar.py
+consigna.md
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+.venv
+venv/
+*.swp
+*.swo
+*~
+.DS_Store
