@@ -4,6 +4,7 @@ import grp
 import os
 import pwd
 import signal
+import select
 import stat
 import sys
 import time
@@ -44,6 +45,7 @@ KEY_VIEW_MAP = {
 }
 
 SORT_MODES = ["cpu", "rss", "pid"]
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
 
 
 def read_text(path):
@@ -84,7 +86,18 @@ def parse_stat(pid):
     text = read_text(f"/proc/{pid}/stat").strip()
     if not text:
         return {}
-    parts = text.split()
+    first_paren = text.find("(")
+    last_paren = text.rfind(")")
+    if first_paren == -1 or last_paren == -1 or first_paren >= last_paren:
+        return {}
+    prefix = text[:first_paren].strip()
+    comm = text[first_paren + 1:last_paren]
+    suffix = text[last_paren + 1:].split()
+    if not prefix or not comm:
+        return {}
+    parts = [prefix, f"({comm})"] + suffix
+    if len(parts) < 24:
+        return {}
     data = {
         "pid": int(parts[0]),
         "comm": parts[1].strip("()"),
@@ -154,7 +167,7 @@ def parse_proc_maps(pid):
         if len(parts) < 5:
             continue
         address, perms, offset, dev, inode = parts[:5]
-        pathname = parts[5] if len(parts) >= 6 else ""
+        pathname = " ".join(parts[5:]) if len(parts) >= 6 else ""
         segments.append({
             "address": address,
             "perms": perms,
@@ -268,6 +281,7 @@ def build_memory_report(pids):
     for pid in pids:
         try:
             status = parse_status(pid)
+            stat_data = parse_stat(pid)
             segments = parse_proc_maps(pid)
         except Exception:
             continue
@@ -284,8 +298,8 @@ def build_memory_report(pids):
             "vm_lib": status.get("VmLib", "0 kB"),
             "vm_hwm": status.get("VmHWM", "0 kB"),
             "vm_swap": status.get("VmSwap", "0 kB"),
-            "minor_faults": status.get("minflt", "0"),
-            "major_faults": status.get("majflt", "0"),
+            "minor_faults": str(stat_data.get("minor_faults", 0)),
+            "major_faults": str(stat_data.get("major_faults", 0)),
             "segments": [],
         }
         by_region = defaultdict(int)
@@ -303,8 +317,17 @@ def build_memory_report(pids):
                 region = "vvar"
             else:
                 region = os.path.basename(name)
-            by_region[region] += 1
-        memory["segments"] = [{"region": k, "count": v} for k, v in by_region.items()]
+            # Calcular tamaño del segmento a partir del rango de direcciones (en bytes)
+            try:
+                addr_range = seg["address"].split('-')
+                if len(addr_range) == 2:
+                    start = int(addr_range[0], 16)
+                    end = int(addr_range[1], 16)
+                    size = end - start
+                    by_region[region] += size
+            except (ValueError, IndexError):
+                pass
+        memory["segments"] = [{"region": k, "bytes": v, "formatted": format_size(v)} for k, v in by_region.items()]
         report[pid] = memory
     return report
 
@@ -341,12 +364,47 @@ def build_threads_report(pids, prev_thread_cpu):
         threads = []
         for tid in thread_ids:
             try:
-                stat_data = parse_stat(f"{pid}/task/{tid}")
+                stat_text = read_text(f"/proc/{pid}/task/{tid}/stat").strip()
+                if not stat_text:
+                    continue
+                first_paren = stat_text.find("(")
+                last_paren = stat_text.rfind(")")
+                if first_paren == -1 or last_paren == -1 or first_paren >= last_paren:
+                    continue
+                prefix = stat_text[:first_paren].strip()
+                comm = stat_text[first_paren + 1:last_paren]
+                suffix = stat_text[last_paren + 1:].split()
+                if not prefix or not comm:
+                    continue
+                parts = [prefix, f"({comm})"] + suffix
+                if len(parts) < 24:
+                    continue
+                stat_data = {
+                    "pid": int(parts[0]),
+                    "comm": parts[1].strip("()"),
+                    "state": parts[2],
+                    "ppid": int(parts[3]),
+                    "pgrp": int(parts[4]),
+                    "session": int(parts[5]),
+                    "utime": int(parts[13]),
+                    "stime": int(parts[14]),
+                    "cutime": int(parts[15]),
+                    "cstime": int(parts[16]),
+                    "priority": int(parts[17]),
+                    "nice": int(parts[18]),
+                    "num_threads": int(parts[19]),
+                    "starttime": int(parts[21]),
+                    "vsize": int(parts[22]),
+                    "rss": int(parts[23]),
+                    "minor_faults": int(parts[9]),
+                    "major_faults": int(parts[11]),
+                }
             except Exception:
                 continue
             if not stat_data:
                 continue
-            comm = read_text(f"/proc/{pid}/task/{tid}/comm").strip()
+            # Leer status del thread para contexto switches
+            thread_status = parse_status(f"{pid}/task/{tid}")
             prev = prev_thread_cpu.get((pid, tid), {})
             prev_proc = prev.get("proc_jiffies", 0)
             prev_total = prev.get("total_jiffies", total_jiffies)
@@ -359,9 +417,9 @@ def build_threads_report(pids, prev_thread_cpu):
                     "tid": tid,
                     "state": stat_data.get("state", ""),
                     "cpu_percent": round(cpu_percent, 2),
-                    "name": comm,
-                    "voluntary_ctxt_switches": parse_status(f"{pid}/task/{tid}").get("voluntary_ctxt_switches", "0"),
-                    "nonvoluntary_ctxt_switches": parse_status(f"{pid}/task/{tid}").get("nonvoluntary_ctxt_switches", "0"),
+                    "name": stat_data.get("comm", ""),
+                    "voluntary_ctxt_switches": thread_status.get("voluntary_ctxt_switches", "0"),
+                    "nonvoluntary_ctxt_switches": thread_status.get("nonvoluntary_ctxt_switches", "0"),
                 }
             )
             prev_thread_cpu[(pid, tid)] = {
@@ -446,11 +504,17 @@ def build_system_report(pids):
 
     top_cpu_sorted = sorted(top_cpu, reverse=True)[:3]
     top_rss_sorted = sorted(top_rss, reverse=True)[:3]
+    # Extraer btime de /proc/stat (boot time en segundos desde epoch)
+    btime = "0"
+    for line in read_lines("/proc/stat"):
+        if line.startswith("btime "):
+            btime = line.split()[1]
+            break
     return {
         "loadavg": loadavg,
         "meminfo": memory,
         "uptime": uptime_seconds,
-        "boot_time": read_text("/proc/stat"),
+        "boot_time": btime,
         "process_count_by_state": dict(proc_counts),
         "threads_total": total_threads,
         "zombies": zombies,
@@ -581,9 +645,8 @@ def render_process_table(window, items, selected_index, offset):
             safe_addstr(window, row_idx + 2, 2, line)
 
 
-def render_detail(window, view_name, items, selected_pid, snapshot):
+def render_detail(window, view_name, items, selected_pid, snapshot, selected_summary=None):
     height, width = window.getmaxyx()
-    process_data = items.get(selected_pid) if isinstance(items, dict) else None
     if view_name == "sistema":
         system = snapshot.get("sistema", {})
         y = 1
@@ -608,17 +671,24 @@ def render_detail(window, view_name, items, selected_pid, snapshot):
         if y < height - 1:
             safe_addstr(window, y, 2, f"Top RSS: {', '.join(system.get('top_rss', []))}")
         return
+    if view_name == "resumen":
+        if not selected_summary:
+            safe_addstr(window, 1, 2, "Seleccione un proceso válido o espere a que se carguen los datos.")
+            return
+        y = 1
+        safe_addstr(window, y, 2, f"PID: {selected_summary.get('pid')} CMD: {selected_summary.get('cmd', '')}")
+        y += 1
+        safe_addstr(window, y, 2, f"CPU%: {selected_summary.get('cpu_percent', 0):.2f} | RSS: {format_size(selected_summary.get('rss', 0))}")
+        y += 1
+        safe_addstr(window, y, 2, f"State: {selected_summary.get('state', '')} | Threads: {selected_summary.get('threads', 0)}")
+        return
+    process_data = items.get(selected_pid) if isinstance(items, dict) else None
     if not process_data:
         safe_addstr(window, 1, 2, "Seleccione un proceso válido o espere a que se carguen los datos.")
         return
     y = 1
     safe_addstr(window, y, 2, f"PID: {process_data.get('pid')} CMD: {process_data.get('cmd', '')}")
     y += 1
-    if view_name == "resumen":
-        safe_addstr(window, y, 2, f"CPU%: {process_data.get('cpu_percent', 0):.2f} | RSS: {format_size(process_data.get('rss', 0))}")
-        y += 1
-        safe_addstr(window, y, 2, f"State: {process_data.get('state')} | Threads: {process_data.get('threads')}")
-        return
     if view_name == "memoria":
         safe_addstr(window, y, 2, f"VmSize: {process_data.get('vm_size')} | VmRSS: {process_data.get('vm_rss')}")
         y += 1
@@ -631,7 +701,8 @@ def render_detail(window, view_name, items, selected_pid, snapshot):
         for seg in process_data.get("segments", [])[: max(0, height - y - 2)]:
             if y >= height - 1:
                 break
-            safe_addstr(window, y, 2, f"{seg['region']}: {seg['count']}")
+            rendered = seg.get("formatted") or format_size(seg.get("bytes", 0))
+            safe_addstr(window, y, 2, f"{seg['region']}: {rendered}")
             y += 1
         return
     if view_name == "fds":
@@ -665,11 +736,77 @@ def render_detail(window, view_name, items, selected_pid, snapshot):
         return
 
 
-def display_loop(snapshot, intervals, shutdown_event):
-    curses.wrapper(lambda stdscr: run_display(stdscr, snapshot, intervals, shutdown_event))
+def load_config(config_path=CONFIG_PATH):
+    """Cargar configuración desde config.json."""
+    config = {
+        "intervals": {
+            "resumen": 2.0,
+            "memoria": 3.0,
+            "fds": 5.0,
+            "threads": 2.0,
+            "senales": 10.0,
+            "scheduling": 10.0,
+            "sistema": 2.0,
+        },
+        "filters": {
+            "cmd": "",
+            "user": "",
+        },
+        "verbose": False,
+    }
+    try:
+        import json
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                loaded = json.load(f)
+                if isinstance(loaded, dict):
+                    for key, value in loaded.items():
+                        if key in ("intervals", "filters") and isinstance(value, dict):
+                            config[key].update(value)
+                        else:
+                            config[key] = value
+    except Exception:
+        pass
+    return config
 
 
-def run_display(stdscr, snapshot, intervals, shutdown_event):
+def apply_runtime_config(config, intervals, filters, verbose_mode):
+    config_intervals = config.get("intervals", {})
+    for view in VIEW_CONFIG:
+        raw_value = config_intervals.get(view, VIEW_CONFIG[view]["default"])
+        try:
+            interval_value = float(raw_value)
+        except (TypeError, ValueError):
+            interval_value = VIEW_CONFIG[view]["default"]
+        intervals[view].value = max(VIEW_CONFIG[view]["minimum"], interval_value)
+
+    config_filters = config.get("filters", {})
+    if isinstance(config_filters, dict):
+        filters["cmd"] = str(config_filters.get("cmd", filters.get("cmd", "")))
+        filters["user"] = str(config_filters.get("user", filters.get("user", "")))
+
+    return bool(config.get("verbose", verbose_mode))
+
+
+def save_snapshot_dump(snapshot, dump_dir="."):
+    """Guardar snapshot a dump_<timestamp>.json."""
+    try:
+        import json
+        timestamp = int(time.time() * 1000)
+        dump_path = os.path.join(dump_dir, f"dump_{timestamp}.json")
+        # Convertir Manager.dict a dict normal
+        dump_data = dict(snapshot)
+        with open(dump_path, "w", encoding="utf-8") as f:
+            json.dump(dump_data, f, indent=2, default=str)
+    except Exception:
+        pass
+
+
+def display_loop(snapshot, intervals, shutdown_event, signal_handler):
+    curses.wrapper(lambda stdscr: run_display(stdscr, snapshot, intervals, shutdown_event, signal_handler))
+
+
+def run_display(stdscr, snapshot, intervals, shutdown_event, signal_handler):
     curses.use_default_colors()
     stdscr.nodelay(True)
     stdscr.keypad(True)
@@ -680,11 +817,21 @@ def run_display(stdscr, snapshot, intervals, shutdown_event):
     filters = {"cmd": "", "user": ""}
     sort_mode = "cpu"
     show_help = False
+    verbose_mode = False
+    config = load_config()
+    verbose_mode = apply_runtime_config(config, intervals, filters, verbose_mode)
     while not shutdown_event.is_set():
         stdscr.erase()
         height, width = stdscr.getmaxyx()
-        stdscr.addstr(0, 2, f"Monitor de Procesos - Vista: {VIEW_CONFIG[view_name]['label']} | Intervalo: {intervals[view_name].value:.1f}s | Orden: {sort_mode} | Pinned: {pinned_pid or '-'}")
-        stdscr.addstr(0, width - 30, f"Filtro: {filters['cmd'] or '-'} U: {filters['user'] or '-'}")
+        left_header = (
+            f"Monitor de Procesos - Vista: {VIEW_CONFIG[view_name]['label']} | "
+            f"Intervalo: {intervals[view_name].value:.1f}s | Orden: {sort_mode} | "
+            f"Pinned: {pinned_pid or '-'} | {'VERBOSE' if verbose_mode else ''}"
+        )
+        right_header = f"Filtro: {filters['cmd'] or '-'} U: {filters['user'] or '-'}"
+        safe_addstr(stdscr, 0, 2, left_header)
+        right_col = max(2, width - len(right_header) - 2)
+        safe_addstr(stdscr, 0, right_col, right_header)
         resumen_items, selected = pick_process(snapshot, selected, filters, sort_mode, pinned_pid)
         if selected < 0 and resumen_items:
             selected = 0
@@ -699,11 +846,25 @@ def run_display(stdscr, snapshot, intervals, shutdown_event):
         detail_win = stdscr.subwin(6, width, height - 6, 0)
         items = snapshot.get(view_name, {}).get("items", {})
         selected_pid = pinned_pid if pinned_pid else (resumen_items[selected]["pid"] if resumen_items else None)
-        render_detail(detail_win, view_name, items, selected_pid, snapshot)
+        selected_summary = resumen_items[selected] if resumen_items else None
+        render_detail(detail_win, view_name, items, selected_pid, snapshot, selected_summary)
         if show_help:
             help_win = stdscr.subwin(min(6, height - 1), width, height - 6, 0)
             render_help(help_win)
         stdscr.refresh()
+        # Procesar señales via select (timeout = 0.1 para responsividad)
+        sig = signal_handler.wait(timeout=0.1)
+        if sig == signal.SIGINT or sig == signal.SIGTERM:
+            shutdown_event.set()
+            break
+        elif sig == signal.SIGUSR1:
+            save_snapshot_dump(snapshot)
+        elif sig == signal.SIGHUP:
+            config = load_config()
+            verbose_mode = apply_runtime_config(config, intervals, filters, verbose_mode)
+        elif sig == signal.SIGUSR2:
+            verbose_mode = not verbose_mode
+        # Procesar inputs del teclado
         key = stdscr.getch()
         if key == -1:
             time.sleep(0.05)
@@ -749,16 +910,61 @@ def run_display(stdscr, snapshot, intervals, shutdown_event):
             curses.noecho()
             curses.curs_set(0)
 
-
-def install_signal_handlers(shutdown_event):
-    def handler(signum, frame):
-        shutdown_event.set()
-
-    for sig in (signal.SIGINT, signal.SIGTERM):
+class SignalHandler:
+    """Manejador de señales usando self-pipe pattern (async-signal-safe)."""
+    
+    def __init__(self):
+        self.pipe_read, self.pipe_write = os.pipe()
+        os.set_blocking(self.pipe_write, False)
+        os.set_blocking(self.pipe_read, False)
+        self.signal_queue = []
+        self.registered_signals = {}
+    
+    def _signal_handler(self, signum, frame):
+        _ = frame
         try:
-            signal.signal(sig, handler)
+            os.write(self.pipe_write, bytes((signum & 0xFF,)))
+        except (BlockingIOError, OSError):
+            pass
+    
+    def register(self, signum, name=None):
+        """Registrar una señal para manejar."""
+        try:
+            signal.signal(signum, self._signal_handler)
+            self.registered_signals[signum] = name or f"SIG{signum}"
         except Exception:
             pass
+    
+    def wait(self, timeout=None):
+        """Esperar señales de forma segura retornando las que se recibieron."""
+        readable, _, _ = select.select([self.pipe_read], [], [], timeout)
+        if self.pipe_read in readable:
+            try:
+                while True:
+                    chunk = os.read(self.pipe_read, 1024)
+                    if not chunk:
+                        break
+                    self.signal_queue.extend(chunk)
+            except (BlockingIOError, OSError):
+                pass
+        return self.signal_queue.pop(0) if self.signal_queue else None
+    
+    def close(self):
+        """Cerrar los pipes."""
+        try:
+            os.close(self.pipe_read)
+            os.close(self.pipe_write)
+        except OSError:
+            pass
+
+
+def install_signal_handlers(signal_handler):
+    """Registrar los handlers de señales con self-pipe."""
+    signal_handler.register(signal.SIGINT, "SIGINT")
+    signal_handler.register(signal.SIGTERM, "SIGTERM")
+    signal_handler.register(signal.SIGHUP, "SIGHUP")
+    signal_handler.register(signal.SIGUSR1, "SIGUSR1")
+    signal_handler.register(signal.SIGUSR2, "SIGUSR2")
 
 
 def main():
@@ -779,12 +985,17 @@ def main():
     pid_list = manager.list()
     result_queue = Queue()
     shutdown_event = Event()
+    config = load_config()
 
-    install_signal_handlers(shutdown_event)
-
-    intervals = {
-        view: Value("d", VIEW_CONFIG[view]["default"]) for view in VIEW_CONFIG
-    }
+    intervals = {}
+    config_intervals = config.get("intervals", {})
+    for view in VIEW_CONFIG:
+        raw_value = config_intervals.get(view, VIEW_CONFIG[view]["default"])
+        try:
+            interval_value = float(raw_value)
+        except (TypeError, ValueError):
+            interval_value = VIEW_CONFIG[view]["default"]
+        intervals[view] = Value("d", max(VIEW_CONFIG[view]["minimum"], interval_value))
 
     collector = Process(target=pid_collector, args=(pid_list, snapshot, shutdown_event), name="Collector")
     aggregator = Process(target=aggregator_loop, args=(snapshot, result_queue, shutdown_event), name="Aggregator")
@@ -802,12 +1013,16 @@ def main():
     for proc in collectors + analyzers:
         proc.start()
 
+    signal_handler = SignalHandler()
+    install_signal_handlers(signal_handler)
+
     try:
-        display_loop(snapshot, intervals, shutdown_event)
+        display_loop(snapshot, intervals, shutdown_event, signal_handler)
     except KeyboardInterrupt:
         shutdown_event.set()
     finally:
         shutdown_event.set()
+        signal_handler.close()
         for proc in collectors + analyzers:
             proc.join(timeout=2.0)
 

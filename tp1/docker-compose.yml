@@ -1,0 +1,13 @@
+services:
+  monitor:
+    build: .
+    container_name: tp1-monitor
+    tty: true
+    stdin_open: true
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    cap_add:
+      - SYS_PTRACE
+    command: python -u monitor.py

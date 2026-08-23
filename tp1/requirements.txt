@@ -1,0 +1,1 @@
+# Proyecto sin dependencias externas (solo stdlib de Python 3.11+)
