@@ -2,6 +2,7 @@
 monitoreo.py.bak
 verificar.py
 consigna.md
+dump_*.json
 __pycache__/
 *.pyc
 *.pyo
