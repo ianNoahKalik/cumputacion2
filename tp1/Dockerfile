@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY config.json .
 COPY monitor.py .
-COPY consigna.md .
 COPY README.md .
 
 # El contenedor debe ser interactivo para la TUI
