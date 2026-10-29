@@ -23,6 +23,19 @@ bloquear el event loop con trabajo CPU-bound.
 Si una tarea supera su `timeout`, queda `fallida` con el motivo y el valor del
 timeout agotado.
 
+## FASE 4: apagado ordenado y persistencia
+
+Uvicorn captura `SIGINT` y `SIGTERM` y ejecuta el `lifespan` de FastAPI. Durante
+el apagado se dejan de aceptar tareas nuevas, se espera hasta
+`SHUTDOWN_TIMEOUT` segundos por la cola y las tareas en ejecución, y luego se
+cancelan las que no terminaron. El estado completo se guarda como
+`estado_<timestamp>.json` en `STATE_DIR`. Al iniciar, la aplicación busca esos
+archivos y registra en el log cuántos volcados previos encontró.
+
+Las variables `SHUTDOWN_TIMEOUT` y `STATE_DIR` son configurables. Docker monta
+`/app/state` en un volumen persistente para conservar los volcados entre
+reinicios.
+
 Para ejecutar la API:
 
 ```bash

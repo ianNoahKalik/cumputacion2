@@ -8,3 +8,10 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       WORKER_COUNT: "2"
+      SHUTDOWN_TIMEOUT: "5"
+      STATE_DIR: "/app/state"
+    volumes:
+      - task_state:/app/state
+
+volumes:
+  task_state:

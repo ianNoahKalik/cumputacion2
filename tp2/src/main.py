@@ -1,10 +1,12 @@
 import os
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Query, status
 
+from src.core.persistence import TaskPersistence
 from src.schemas import (
     EstadoTarea,
     EstadisticasResponse,
@@ -18,7 +20,10 @@ from src.workers.pool import WorkerPool
 
 _tareas: dict[UUID, TareaResponse] = {}
 _worker_count = int(os.getenv("WORKER_COUNT", "2"))
+_shutdown_timeout = float(os.getenv("SHUTDOWN_TIMEOUT", "5"))
+_persistence = TaskPersistence(os.getenv("STATE_DIR", "."))
 _queue_manager = WorkerPool(_tareas, execute_task, _worker_count)
+logger = logging.getLogger(__name__)
 
 
 def _ahora() -> datetime:
@@ -27,12 +32,17 @@ def _ahora() -> datetime:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    _persistence.report_previous_dumps()
     await _queue_manager.start()
     try:
         yield
     finally:
-        await _queue_manager.stop()
-        await shutdown_executor()
+        logger.info("Iniciando apagado ordenado por señal del servidor")
+        await _queue_manager.stop(timeout=_shutdown_timeout)
+        try:
+            _persistence.dump(_tareas)
+        finally:
+            await shutdown_executor()
 
 
 app = FastAPI(
@@ -113,7 +123,7 @@ async def obtener_estadisticas() -> EstadisticasResponse:
         if tarea.finalizada_en is not None
     ]
     promedio = sum(duraciones) / len(duraciones) if duraciones else 0.0
-    workers_ocupados = totales["ejecutando"]
+    workers_ocupados = _queue_manager.workers_busy
     return EstadisticasResponse(
         totales_por_estado=totales,
         tiempo_promedio_segundos=promedio,
@@ -125,3 +135,4 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+from src.core.persistence import TaskPersistence
