@@ -105,7 +105,9 @@ class TaskQueueManager:
                         raise
                 except asyncio.TimeoutError:
                     task.estado = "fallida"
-                    task.error = "Tiempo de ejecucion agotado"
+                    task.error = (
+                        f"Tiempo de ejecucion agotado ({task.timeout} segundos)"
+                    )
                 except Exception as error:
                     task.estado = "fallida"
                     task.error = str(error)

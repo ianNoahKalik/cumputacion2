@@ -12,7 +12,7 @@ from src.schemas import (
     TareaResponse,
     TipoTarea,
 )
-from src.tasks.executor import execute_task
+from src.tasks.executor import execute_task, shutdown_executor
 from src.workers.pool import WorkerPool
 
 
@@ -32,6 +32,7 @@ async def lifespan(_: FastAPI):
         yield
     finally:
         await _queue_manager.stop()
+        await shutdown_executor()
 
 
 app = FastAPI(
