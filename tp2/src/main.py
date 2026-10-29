@@ -1,3 +1,5 @@
+import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
@@ -10,19 +12,34 @@ from src.schemas import (
     TareaResponse,
     TipoTarea,
 )
+from src.tasks.executor import execute_task
+from src.workers.pool import WorkerPool
+
+
+_tareas: dict[UUID, TareaResponse] = {}
+_worker_count = int(os.getenv("WORKER_COUNT", "2"))
+_queue_manager = WorkerPool(_tareas, execute_task, _worker_count)
+
+
+def _ahora() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    await _queue_manager.start()
+    try:
+        yield
+    finally:
+        await _queue_manager.stop()
 
 
 app = FastAPI(
     title="Plataforma de Tareas Distribuidas",
     version="0.1.0",
     description="API base del TP2 de Computacion II.",
+    lifespan=lifespan,
 )
-
-_tareas: dict[UUID, TareaResponse] = {}
-
-
-def _ahora() -> datetime:
-    return datetime.now(timezone.utc)
 
 
 @app.post(
@@ -40,6 +57,7 @@ async def crear_tarea(tarea: TareaCreate) -> TareaResponse:
         creada_en=_ahora(),
     )
     _tareas[tarea_creada.id] = tarea_creada
+    await _queue_manager.enqueue(tarea_creada.id)
     return tarea_creada
 
 
@@ -71,8 +89,7 @@ async def cancelar_tarea(tarea_id: UUID) -> TareaResponse:
             status_code=409,
             detail="La tarea ya finalizo y no puede cancelarse",
         )
-    tarea.estado = "cancelada"
-    tarea.finalizada_en = _ahora()
+    await _queue_manager.cancel(tarea_id)
     return tarea
 
 
