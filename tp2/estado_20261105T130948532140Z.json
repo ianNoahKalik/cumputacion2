@@ -1,0 +1,517 @@
+{
+  "generado_en": "2026-11-05T13:09:48.532168+00:00",
+  "tareas": [
+    {
+      "id": "7a010012-ecfe-45f4-afcf-0d1f094d7aac",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.979886Z",
+      "iniciada_en": "2026-11-05T13:09:48.002212Z",
+      "finalizada_en": "2026-11-05T13:09:48.023089Z"
+    },
+    {
+      "id": "3a96c840-b90f-4b10-95f0-2d40641dde48",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.980618Z",
+      "iniciada_en": "2026-11-05T13:09:48.002247Z",
+      "finalizada_en": "2026-11-05T13:09:48.023107Z"
+    },
+    {
+      "id": "cfe83778-c2d7-4833-ac91-39883fce4e91",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.981284Z",
+      "iniciada_en": "2026-11-05T13:09:48.023097Z",
+      "finalizada_en": "2026-11-05T13:09:48.059259Z"
+    },
+    {
+      "id": "335a2aef-afaf-4ebf-94cb-cd77cc917915",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.981915Z",
+      "iniciada_en": "2026-11-05T13:09:48.023110Z",
+      "finalizada_en": "2026-11-05T13:09:48.059276Z"
+    },
+    {
+      "id": "b3d043b2-c161-41be-8268-b5dca531888b",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.982548Z",
+      "iniciada_en": "2026-11-05T13:09:48.059266Z",
+      "finalizada_en": "2026-11-05T13:09:48.088260Z"
+    },
+    {
+      "id": "8f1d15a1-de13-48d5-8dd5-a6dfd4edd937",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.983190Z",
+      "iniciada_en": "2026-11-05T13:09:48.059279Z",
+      "finalizada_en": "2026-11-05T13:09:48.088279Z"
+    },
+    {
+      "id": "74c44d80-069a-49d6-8ccf-f8904c192ab3",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.983812Z",
+      "iniciada_en": "2026-11-05T13:09:48.088268Z",
+      "finalizada_en": "2026-11-05T13:09:48.120570Z"
+    },
+    {
+      "id": "38999e87-e4ad-450d-834c-971107b5a3f6",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.984450Z",
+      "iniciada_en": "2026-11-05T13:09:48.088283Z",
+      "finalizada_en": "2026-11-05T13:09:48.120588Z"
+    },
+    {
+      "id": "3d3fa377-ab7f-4c55-bca7-6094bb05e6f0",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.985075Z",
+      "iniciada_en": "2026-11-05T13:09:48.120577Z",
+      "finalizada_en": "2026-11-05T13:09:48.151370Z"
+    },
+    {
+      "id": "bd1c12e3-50c8-4c12-8e97-7eece2860f2d",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.985842Z",
+      "iniciada_en": "2026-11-05T13:09:48.120591Z",
+      "finalizada_en": "2026-11-05T13:09:48.151387Z"
+    },
+    {
+      "id": "26e729dd-ceaf-40f2-bcfb-ab6e6f137f9d",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.986539Z",
+      "iniciada_en": "2026-11-05T13:09:48.151377Z",
+      "finalizada_en": "2026-11-05T13:09:48.183207Z"
+    },
+    {
+      "id": "b78137fb-766a-40fa-acbd-549825710b4d",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.987182Z",
+      "iniciada_en": "2026-11-05T13:09:48.151390Z",
+      "finalizada_en": "2026-11-05T13:09:48.183225Z"
+    },
+    {
+      "id": "4e9c7bae-104f-4501-a548-f948d135e2b6",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.987808Z",
+      "iniciada_en": "2026-11-05T13:09:48.183214Z",
+      "finalizada_en": "2026-11-05T13:09:48.216249Z"
+    },
+    {
+      "id": "a6e42180-13ef-4d56-995f-e53f5990da11",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.988440Z",
+      "iniciada_en": "2026-11-05T13:09:48.183228Z",
+      "finalizada_en": "2026-11-05T13:09:48.216267Z"
+    },
+    {
+      "id": "9264983e-39c8-4b5e-9da2-95aa0486b89b",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.989062Z",
+      "iniciada_en": "2026-11-05T13:09:48.216257Z",
+      "finalizada_en": "2026-11-05T13:09:48.247985Z"
+    },
+    {
+      "id": "d491955d-e37f-4654-b319-7b75c4909dcb",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.989682Z",
+      "iniciada_en": "2026-11-05T13:09:48.216270Z",
+      "finalizada_en": "2026-11-05T13:09:48.248002Z"
+    },
+    {
+      "id": "a7fd73fc-1699-4e12-9e87-8f910c4a59f0",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.990314Z",
+      "iniciada_en": "2026-11-05T13:09:48.247992Z",
+      "finalizada_en": "2026-11-05T13:09:48.278023Z"
+    },
+    {
+      "id": "8b8f079f-0435-431a-8ffb-870aa21e87fb",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.990992Z",
+      "iniciada_en": "2026-11-05T13:09:48.248005Z",
+      "finalizada_en": "2026-11-05T13:09:48.278040Z"
+    },
+    {
+      "id": "e9577165-bbff-44b9-91ba-7f4fa4d76102",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.991626Z",
+      "iniciada_en": "2026-11-05T13:09:48.278030Z",
+      "finalizada_en": "2026-11-05T13:09:48.312710Z"
+    },
+    {
+      "id": "d8a49f8a-f00c-423d-9664-5a911de8a305",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.992269Z",
+      "iniciada_en": "2026-11-05T13:09:48.278043Z",
+      "finalizada_en": "2026-11-05T13:09:48.312728Z"
+    },
+    {
+      "id": "bff3e150-a968-451f-8702-4441d4c8ae23",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.992932Z",
+      "iniciada_en": "2026-11-05T13:09:48.312717Z",
+      "finalizada_en": "2026-11-05T13:09:48.341998Z"
+    },
+    {
+      "id": "b8561663-ca60-4f70-8bff-2a3244357178",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.993570Z",
+      "iniciada_en": "2026-11-05T13:09:48.312732Z",
+      "finalizada_en": "2026-11-05T13:09:48.342018Z"
+    },
+    {
+      "id": "1a44493d-60fb-4cfb-aa87-8a50daa8f4cb",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.994224Z",
+      "iniciada_en": "2026-11-05T13:09:48.342007Z",
+      "finalizada_en": "2026-11-05T13:09:48.373095Z"
+    },
+    {
+      "id": "fbd943a8-dbe3-422d-b72c-1c46caa9bccd",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.994837Z",
+      "iniciada_en": "2026-11-05T13:09:48.342022Z",
+      "finalizada_en": "2026-11-05T13:09:48.373113Z"
+    },
+    {
+      "id": "6104b2a1-75b1-4bfe-be39-61a1a4ad9c69",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.995633Z",
+      "iniciada_en": "2026-11-05T13:09:48.373103Z",
+      "finalizada_en": "2026-11-05T13:09:48.404823Z"
+    },
+    {
+      "id": "eae6af97-bc4a-4024-9e47-1178649417ce",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.996912Z",
+      "iniciada_en": "2026-11-05T13:09:48.373116Z",
+      "finalizada_en": "2026-11-05T13:09:48.404850Z"
+    },
+    {
+      "id": "5d1f6fce-23d0-4411-82eb-020522ce0f76",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.998090Z",
+      "iniciada_en": "2026-11-05T13:09:48.404838Z",
+      "finalizada_en": "2026-11-05T13:09:48.436330Z"
+    },
+    {
+      "id": "72487bb4-eb2f-4a70-a115-54b5f9e58812",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.999009Z",
+      "iniciada_en": "2026-11-05T13:09:48.404853Z",
+      "finalizada_en": "2026-11-05T13:09:48.436347Z"
+    },
+    {
+      "id": "2428462d-c02d-4b3f-83ce-557aa20697a7",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:47.999707Z",
+      "iniciada_en": "2026-11-05T13:09:48.436337Z",
+      "finalizada_en": "2026-11-05T13:09:48.467153Z"
+    },
+    {
+      "id": "7aaeb8de-c09d-4afb-9936-7df18427a13e",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:48.000385Z",
+      "iniciada_en": "2026-11-05T13:09:48.436350Z",
+      "finalizada_en": "2026-11-05T13:09:48.467170Z"
+    },
+    {
+      "id": "05d545f7-3998-446e-8238-516fbd6cf64a",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:48.001034Z",
+      "iniciada_en": "2026-11-05T13:09:48.467160Z",
+      "finalizada_en": "2026-11-05T13:09:48.499373Z"
+    },
+    {
+      "id": "74f1300a-80cb-44c8-9604-77a01a5d247e",
+      "tipo": "esperar",
+      "estado": "completada",
+      "parametros": {
+        "segundos": 0.02
+      },
+      "resultado": {
+        "segundos": 0.02
+      },
+      "error": null,
+      "timeout": null,
+      "creada_en": "2026-11-05T13:09:48.001885Z",
+      "iniciada_en": "2026-11-05T13:09:48.467173Z",
+      "finalizada_en": "2026-11-05T13:09:48.499383Z"
+    }
+  ]
+}

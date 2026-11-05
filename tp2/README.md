@@ -48,6 +48,34 @@ La suite de `pytest` verifica creación, consulta, listado con filtro,
 cancelación, finalización, fallos por parámetros inválidos, timeouts,
 ocupación de workers y cálculo de estadísticas.
 
+## FASE 6: mediciones obligatorias
+
+Los benchmarks reproducibles están en
+[`benchmarks/benchmark.py`](./benchmarks/benchmark.py) y se ejecutan desde
+`tp2/` con:
+
+```bash
+python -m benchmarks.benchmark
+```
+
+El script imprime:
+
+1. **Concurrencia I/O:** 20 descargas contra un servidor HTTP local controlado,
+   primero una por vez y luego dentro de una tarea `descargar` concurrente.
+   Informa ambos tiempos y `Speedup = secuencial / concurrente`.
+2. **Event loop:** tiempo hasta responder `GET /tareas` mientras se ejecuta el
+   mismo hash directamente en el event loop y mediante
+   `ProcessPoolExecutor`. El pool se calienta antes de medir para no mezclar
+   el costo de arranque con el resultado.
+3. **Techo del pool:** lotes configurables de tareas `esperar` enviados al
+   endpoint real mediante ASGI. Informa tiempo total y promedio por tarea.
+
+Se pueden cambiar los parámetros, por ejemplo:
+
+```bash
+python -m benchmarks.benchmark --delay 0.05 --iterations 2000000 --batches 1 2 4 8 16 32
+```
+
 Para ejecutar la API:
 
 ```bash
