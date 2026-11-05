@@ -118,9 +118,9 @@ async def obtener_estadisticas() -> EstadisticasResponse:
         for estado in estados
     }
     duraciones = [
-        (tarea.finalizada_en - tarea.creada_en).total_seconds()
+        (tarea.finalizada_en - tarea.iniciada_en).total_seconds()
         for tarea in _tareas.values()
-        if tarea.finalizada_en is not None
+        if tarea.iniciada_en is not None and tarea.finalizada_en is not None
     ]
     promedio = sum(duraciones) / len(duraciones) if duraciones else 0.0
     workers_ocupados = _queue_manager.workers_busy

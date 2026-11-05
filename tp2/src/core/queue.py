@@ -21,7 +21,7 @@ class TaskQueueManager:
             raise ValueError("worker_count debe ser mayor que cero")
         self._tasks = tasks
         self._executor = executor
-        self._queue: asyncio.Queue[UUID] = asyncio.Queue()
+        self._queue: asyncio.Queue[UUID] | None = None
         self._worker_count = worker_count
         self._workers: list[asyncio.Task[None]] = []
         self._running_tasks: dict[UUID, asyncio.Task[object]] = {}
@@ -40,6 +40,7 @@ class TaskQueueManager:
         if self._started:
             return
         self._accepting = True
+        self._queue = asyncio.Queue()
         self._workers = [
             asyncio.create_task(self._worker(index))
             for index in range(self._worker_count)
@@ -50,6 +51,8 @@ class TaskQueueManager:
         if not self._accepting:
             raise RuntimeError("El administrador no acepta tareas nuevas")
         await self.start()
+        if self._queue is None:
+            raise RuntimeError("La cola no esta iniciada")
         await self._queue.put(task_id)
 
     async def cancel(self, task_id: UUID) -> bool:
@@ -71,7 +74,8 @@ class TaskQueueManager:
         self._accepting = False
         pending_workers = list(self._workers)
         try:
-            await asyncio.wait_for(self._queue.join(), timeout=timeout)
+            if self._queue is not None:
+                await asyncio.wait_for(self._queue.join(), timeout=timeout)
         except asyncio.TimeoutError:
             for task in self._running_tasks.values():
                 task.cancel()
@@ -85,7 +89,10 @@ class TaskQueueManager:
     async def _worker(self, worker_index: int) -> None:
         del worker_index
         while True:
-            task_id = await self._queue.get()
+            queue = self._queue
+            if queue is None:
+                return
+            task_id = await queue.get()
             try:
                 task = self._tasks.get(task_id)
                 if task is None or task.estado == "cancelada":
@@ -117,7 +124,7 @@ class TaskQueueManager:
                     self._running_tasks.pop(task_id, None)
                     task.finalizada_en = task.finalizada_en or _utc_now()
             finally:
-                self._queue.task_done()
+                queue.task_done()
 
     async def _run_with_timeout(self, task: TareaResponse) -> object:
         if task.timeout is None:

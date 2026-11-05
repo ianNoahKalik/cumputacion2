@@ -36,6 +36,18 @@ Las variables `SHUTDOWN_TIMEOUT` y `STATE_DIR` son configurables. Docker monta
 `/app/state` en un volumen persistente para conservar los volcados entre
 reinicios.
 
+## FASE 5: estadísticas y pruebas
+
+`GET /estadisticas` devuelve siempre los cinco estados posibles, el promedio
+del tiempo de ejecución de las tareas que comenzaron y finalizaron, y la
+cantidad actual de workers ocupados. El promedio se mide desde `iniciada_en`
+hasta `finalizada_en`, sin incluir el tiempo que una tarea pasó esperando en la
+cola.
+
+La suite de `pytest` verifica creación, consulta, listado con filtro,
+cancelación, finalización, fallos por parámetros inválidos, timeouts,
+ocupación de workers y cálculo de estadísticas.
+
 Para ejecutar la API:
 
 ```bash
